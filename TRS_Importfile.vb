@@ -1,5 +1,6 @@
 ' Standard transaction example
 ' The following code illustrates the use of the TransField object and how to override the standard transaction in the Manager module. 
+' vlt als MngrFormDefSaved event ??
 Function OnMngrFormDefTransDefault() As Long
 ' ---------------------------------------------------------------------
 ' Call this function in the MngrFormDefTransDefault event in the 
@@ -30,7 +31,7 @@ Function OnMngrFormDefTransDefault() As Long
     
     Set objCurrFormDef = ManagerApp.FormDef
     intNoOfFields = objCurrFormDef.FieldDefs.Count
-	MsgBox "intNoFields:" & intNoOfFields & "-"
+	' MsgBox "intNoFields:" & intNoOfFields & "-"
 	
 	intTRSPos = 1
 	intFieldNo = 1
@@ -43,25 +44,20 @@ Function OnMngrFormDefTransDefault() As Long
 	' Object: ManagerApp.Formdef.AddTransField(intTRSPos)
 
 
-	
-	''' Field
-	Set objTransField = objCurrFormDef.AddTransField(intTRSPos)
-	objTransField.Name = "#Importfile"
-	objTransField.Index = 0
-	objTransField.Format = "X(100)"
-	objTransField.PadChar = " "
-	objTransField.LeftJustify
-	objTransField.Length = 100
-
-
-    intRet = objTransField.Save
-	REM MsgBox objTransField.Name & " hat TRS-Position:" & intTRSPos & "intRet:" & intRet
-    If intRet <> 0 Then
-		OnMngrFormDefTransDefault = EV_ERROR
-		Exit Function
-    End If	
-	intTRSPos = intTRSPos + 1
-	''' /Field
+	REM ''' Field Importfile
+	REM Set objTransField = objCurrFormDef.AddTransField(intTRSPos)
+	REM objTransField.Name = "#Importfile"
+	REM objTransField.Index = 0
+	REM objTransField.Format = "X(100)"
+	REM ' objTransField.PadChar = " "
+	REM objTransField.Length = 100
+    REM intRet = objTransField.Save
+    REM If intRet <> 0 Then
+		REM OnMngrFormDefTransDefault = EV_ERROR
+		REM Exit Function
+    REM End If	
+	REM intTRSPos = intTRSPos + 1
+	REM ''' /Field
 
     'Loops through the fields on the form definition and creates
     'transaction fields for each
@@ -82,16 +78,17 @@ Function OnMngrFormDefTransDefault() As Long
 				objTransField.Index = .Index
 				objTransField.Format = .Format
 				objTransField.Length = .GetMaxLengthFromFormat
+				objTransField.PadChar = " "
 				
 				intRet = objTransField.Save
 				
-				REM msg = "Feldname:" & .Name
-				REM msg = msg & "Feldindex:" & .Index
-				REM msg = msg & "Feldformat:" & .Format
-				REM msg = msg & "Feld-maxLength:" & .GetMaxLengthFromFormat
-				REM msg = msg & "TRS-Position:" & intTRSPos
-				REM msg = msg & "intRet:" & intRet
-				REM MsgBox msg
+				msg = "Feldname:" & .Name
+				msg = msg & "Feldindex:" & .Index
+				msg = msg & "Feldformat:" & .Format
+				msg = msg & "Feld-maxLength:" & .GetMaxLengthFromFormat
+				msg = msg & "TRS-Position:" & intTRSPos
+				msg = msg & "intRet:" & intRet
+				MsgBox msg
 
 				
 				If intRet <> 0 Then
@@ -126,6 +123,38 @@ End Function
 
 
 
+		REM ''' Field 1 Reference
+	REM Set objTransField = objCurrFormDef.AddTransField(intTRSPos)
+	REM objTransField.Name = "#Reference"
+	REM objTransField.Index = 0
+	REM objTransField.Format = "X(11)"
+	REM objTransField.PadChar = " "
+	REM ' MsgBox "Ref Just:" & objTransField.LeftJustify
+	REM objTransField.Length = 11
+    REM intRet = objTransField.Save
+    REM If intRet <> 0 Then
+		REM OnMngrFormDefTransDefault = EV_ERROR
+		REM Exit Function
+    REM End If	
+	REM intTRSPos = intTRSPos + 1
+	REM ''' /Field
+
+	REM ''' Field 2 Date
+	REM Set objTransField = objCurrFormDef.AddTransField(intTRSPos)
+	REM objTransField.Name = "#Date"
+	REM objTransField.Index = 0
+	REM objTransField.Format = "YYMMDD"
+	REM objTransField.PadChar = " "
+	REM objTransField.Length = 6
+    REM intRet = objTransField.Save
+    REM If intRet <> 0 Then
+		REM OnMngrFormDefTransDefault = EV_ERROR
+		REM Exit Function
+    REM End If	
+	REM intTRSPos = intTRSPos + 1
+	REM ''' /Field
+	
+	
 
 
 
