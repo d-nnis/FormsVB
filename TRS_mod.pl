@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use Win32::GuiTest qw (:ALL);
 use forms_automate;
 
 my $forms = Forms->new();
@@ -10,7 +11,7 @@ foreach (0..9) {
 	#$forms->TRS_std();
 }
 
-foreach (0..9) {
+foreach (0..0) {
 	$forms->change_format_TRS();
 }
 

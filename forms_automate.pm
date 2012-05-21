@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-use Win32::GuiTest qw(:ALL);
+use Win32::GuiTest qw (:ALL);
+#use Win32::GuiTest qw(FindWindowLike);
 
 
 {
@@ -18,12 +19,13 @@ use Win32::GuiTest qw(:ALL);
 	sub init {
 		my $self = shift;
 		my $target_window = "ReadSoft FORMS Manager";
-		my @windows = FindWindowLike(undef, $target_window);
+		my @windows = Win32::GuiTest::FindWindowLike(undef, $target_window);
+		#my @windows = FindWindowLike(undef, $target_window);
 		die "Could not find $target_window\n" unless @windows;
 		die "There is more than one $target_window running\n" if @windows > 1;
 		my $mngr = $windows[0];
 		print "found windows $mngr\n";
-		SetForegroundWindow($mngr);
+		Win32::GuiTest::SetForegroundWindow($mngr);
 	}
 	
     sub get_option {
@@ -57,9 +59,9 @@ use Win32::GuiTest qw(:ALL);
 	sub TRS_std {
 		my $self = shift;
 		# open TRS
-		SendKeys("%bt");
+		Win32::GuiTest::SendKeys("%bt");
 		# default TRS on empty
-		SendKeys("{TAB}{ENTER}{DOWN}{ENTER}{ENTER}{ENTER}",50);
+		Win32::GuiTest::SendKeys("{TAB}{ENTER}{DOWN}{ENTER}{ENTER}{ENTER}",50);
 		print "std in TRS\n";
 		# close or empty
 		save_next() if get_option("save_next");
@@ -69,52 +71,52 @@ use Win32::GuiTest qw(:ALL);
 	sub change_format_TRS {
 		my $self = shift;
 		# open TRS
-		SendKeys("%bt");
+		Win32::GuiTest::SendKeys("%bt");
 		# select #Importfile
 		foreach (1..11) {
-			SendKeys("{DOWN}",35);	
+			Win32::GuiTest::SendKeys("{DOWN}",35);	
 		}
 		# find properties button
 		foreach (1..15) {
-			SendKeys("{TAB}",35);	
+			Win32::GuiTest::SendKeys("{TAB}",35);	
 		}
 		# Format field
-		SendKeys("{ENTER}{TAB}{TAB}",35);
+		Win32::GuiTest::SendKeys("{ENTER}{TAB}{TAB}",35);
 		# enter "X(100)"
-		SendKeys("{X}{(}100{)}");
+		Win32::GuiTest::SendKeys("{X}{(}100{)}");
 		# length field
-		SendKeys("{TAB}{TAB}{TAB}{TAB}",35);
+		Win32::GuiTest::SendKeys("{TAB}{TAB}{TAB}{TAB}",35);
 		# enter "X(100)"
-		SendKeys("100");
-		SendKeys("{ENTER}",50);
+		Win32::GuiTest::SendKeys("100");
+		Win32::GuiTest::SendKeys("{ENTER}",50);
 		print "importfile changed\n";
 		
 		# select Fieldfile
-		SendKeys("{DOWN}{DOWN}");
+		Win32::GuiTest::SendKeys("{DOWN}{DOWN}");
 		# find properties button
 		foreach (1..15) {
-			SendKeys("{TAB}",35);	
+			Win32::GuiTest::SendKeys("{TAB}",35);	
 		}
 		# Format field
-		SendKeys("{ENTER}{TAB}{TAB}",35);
+		Win32::GuiTest::SendKeys("{ENTER}{TAB}{TAB}",35);
 		# enter "X(100)"
-		SendKeys("{X}{(}100{)}");
+		Win32::GuiTest::SendKeys("{X}{(}100{)}");
 		# length field
-		SendKeys("{TAB}{TAB}{TAB}{TAB}",35);
+		Win32::GuiTest::SendKeys("{TAB}{TAB}{TAB}{TAB}",35);
 		# enter "X(100)"
-		SendKeys("100");
-		SendKeys("{ENTER}",35);
+		Win32::GuiTest::SendKeys("100");
+		Win32::GuiTest::SendKeys("{ENTER}",35);
 		print "fieldfile changed\n";
-		SendKeys("{ENTER}",35);
+		Win32::GuiTest::SendKeys("{ENTER}",35);
 		save_next() if get_option("save_next");
 	}
 }
 
 sub save_next {
 	# save
-	SendKeys("^s",35);
+	Win32::GuiTest::SendKeys("^s",35);
 	# to next and load
-	SendKeys("{TAB}{DOWN}{ENTER}",35);
+	Win32::GuiTest::SendKeys("{TAB}{DOWN}{ENTER}",35);
 	print "def saved";
 }
 
