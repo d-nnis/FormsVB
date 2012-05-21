@@ -1,86 +1,19 @@
 use strict;
 use warnings;
+use forms_automate;
 
-use Win32::GuiTest qw (:ALL);
-
-my $target_window = "ReadSoft FORMS Manager";
-
-my @windows = FindWindowLike(undef, $target_window);
-die "Could not find $target_window\n" unless @windows;
-die "There is more than one $target_window running\n" if @windows > 1;
-my $mngr = $windows[0];
-print "found windows $mngr\n";
-SetForegroundWindow($mngr);
+my $forms = Forms->new();
+$forms->option(save_next => 1);
+$forms->init();
 
 foreach (0..9) {
-	#TRS_std();
-	#save_next();
+	#$forms->TRS_std();
 }
 
 foreach (0..9) {
-	change_format_TRS();
-	save_next();
+	$forms->change_format_TRS();
 }
 
-# set standard TRS, overwrite existing TRS
-sub TRS_std {
-	# open TRS
-	SendKeys("%bt");
-	# default TRS on empty
-	SendKeys("{TAB}{ENTER}{DOWN}{ENTER}{ENTER}{ENTER}",50);
-	print "std in TRS\n";
-	# close or empty
-}
-
-# changes Importfile & Fieldfile tp  "X(100)", requires standard TRS
-sub change_format_TRS {
-	# open TRS
-	SendKeys("%bt");
-	# select #Importfile
-	foreach (1..11) {
-		SendKeys("{DOWN}",35);	
-	}
-	# find properties button
-	foreach (1..15) {
-		SendKeys("{TAB}",35);	
-	}
-	# Format field
-	SendKeys("{ENTER}{TAB}{TAB}",35);
-	# enter "X(100)"
-	SendKeys("{X}{(}100{)}");
-	# length field
-	SendKeys("{TAB}{TAB}{TAB}{TAB}",35);
-	# enter "X(100)"
-	SendKeys("100");
-	SendKeys("{ENTER}",50);
-	print "importfile changed\n";
-	
-	# select Fieldfile
-	SendKeys("{DOWN}{DOWN}");
-	# find properties button
-	foreach (1..15) {
-		SendKeys("{TAB}",35);	
-	}
-	# Format field
-	SendKeys("{ENTER}{TAB}{TAB}",35);
-	# enter "X(100)"
-	SendKeys("{X}{(}100{)}");
-	# length field
-	SendKeys("{TAB}{TAB}{TAB}{TAB}",35);
-	# enter "X(100)"
-	SendKeys("100");
-	SendKeys("{ENTER}",35);
-	print "fieldfile changed\n";
-	SendKeys("{ENTER}",35);
-}
-
-sub save_next {
-	# save
-	SendKeys("^s",35);
-	# to next and load
-	SendKeys("{TAB}{DOWN}{ENTER}",35);
-	print "def saved";
-}
 
 __END__
 ## mouse-Action
