@@ -13,6 +13,7 @@ use Win32::GuiTest qw (:ALL);
 		bless ($self, $class);
 		# default settings
 		$self->option(save_next => 1);
+		$self->option(shell => 1);
 		return $self;
 	}
 	
@@ -24,7 +25,7 @@ use Win32::GuiTest qw (:ALL);
 		die "Could not find $target_window\n" unless @windows;
 		die "There is more than one $target_window running\n" if @windows > 1;
 		my $mngr = $windows[0];
-		print "found windows $mngr\n";
+		print "found window $mngr\n";
 		Win32::GuiTest::SetForegroundWindow($mngr);
 	}
 	
@@ -46,7 +47,7 @@ use Win32::GuiTest qw (:ALL);
             }
         }
         my (%opts_in) = @_;
-        my @valid_opts = qw(save_next);
+        my @valid_opts = qw(save_next shell);
         my $option;
         foreach my $opt_in (keys %opts_in) {
             warn "not recognized option: $opt_in" unless grep {$opt_in eq $_} @valid_opts;
@@ -54,6 +55,15 @@ use Win32::GuiTest qw (:ALL);
             $self->{$opt_in} = $opts_in{$opt_in};
         }
     }
+	
+	sub TRS_std_1 {
+		my $self = shift;
+		$self->init() if $self->option("shell");
+		$self->option(save_next => 0);
+		$self->TRS_std();
+		$self->change_format_TRS();
+		$self->save();
+	}
 	
 	# set standard TRS, overwrite existing TRS
 	sub TRS_std {
@@ -64,7 +74,7 @@ use Win32::GuiTest qw (:ALL);
 		Win32::GuiTest::SendKeys("{TAB}{ENTER}{DOWN}{ENTER}{ENTER}{ENTER}",50);
 		print "std in TRS\n";
 		# close or empty
-		save_next() if get_option("save_next");
+		$self->save_next() if $self->get_option("save_next");
 	}
 	
 	# changes Importfile & Fieldfile tp  "X(100)", requires standard TRS
@@ -108,17 +118,30 @@ use Win32::GuiTest qw (:ALL);
 		Win32::GuiTest::SendKeys("{ENTER}",35);
 		print "fieldfile changed\n";
 		Win32::GuiTest::SendKeys("{ENTER}",35);
-		save_next() if get_option("save_next");
+		$self->save_next() if $self->get_option("save_next");
+	}
+	
+	sub save_next {
+		my $self = shift;
+		$self->save();
+		$self->next();
+	}
+	
+	sub save {
+		my $self = shift;
+		# save
+		Win32::GuiTest::SendKeys("^s",35);
+		print "def saved";
+	}
+	
+	sub next {
+		my $self = shift;
+		# to next and load
+		Win32::GuiTest::SendKeys("{TAB}{DOWN}{ENTER}",35);
 	}
 }
 
-sub save_next {
-	# save
-	Win32::GuiTest::SendKeys("^s",35);
-	# to next and load
-	Win32::GuiTest::SendKeys("{TAB}{DOWN}{ENTER}",35);
-	print "def saved";
-}
+
 
 
 1;

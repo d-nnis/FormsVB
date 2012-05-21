@@ -4,11 +4,13 @@ use Win32::GuiTest qw (:ALL);
 use forms_automate;
 
 my $forms = Forms->new();
-$forms->option(save_next => 1);
+$forms->option(save_next => 1, shell => 0);
 $forms->init();
 
-foreach (0..9) {
-	#$forms->TRS_std();
+$forms->TRS_std_1();
+
+foreach (0..0) {
+	$forms->TRS_std();
 }
 
 foreach (0..0) {
