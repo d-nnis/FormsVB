@@ -23,9 +23,9 @@ use Win32::GuiTest qw (:ALL);
 		#my @windows = FindWindowLike(undef, $target_window);
 		die "Could not find $target_window\n" unless @windows;
 		die "There is more than one $target_window running\n" if @windows > 1;
-		my $mngr = $windows[0];
-		print "found window $mngr\n";
-		Win32::GuiTest::SetForegroundWindow($mngr);
+		$self->{mngr} = $windows[0];
+		print "found window $self->{mngr}\n";
+		Win32::GuiTest::SetForegroundWindow($self->{mngr});
 	}
 	
     sub get_option {
@@ -68,7 +68,11 @@ use Win32::GuiTest qw (:ALL);
 	## ci: continue item
 	sub ci {
 		my $self = shift;
-		Win32::GuiTest::SendKeys("%bf");
+		$self->init() if $self->option("shell");
+		Win32::GuiTest::SendKeys("{F6}{TAB}");
+		my $text = Win32::GuiTest::WMGetText($self->{mngr});
+		$text = Win32::GuiTest::GetWindowText($self->{mngr});
+		print $text."\n";
 	}
 	
 	sub form_def_einst {
