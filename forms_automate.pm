@@ -74,6 +74,7 @@ use Essent;
 		my $self = shift;
 		my $wait = $self->get_option("wait");
 		my $clip = Win32::Clipboard();
+		$clip->Empty();
 		$self->init() if $self->option("shell");
 		Win32::GuiTest::SendKeys("{F6}{TAB}", $wait);
 		Win32::GuiTest::SendKeys("^c");
@@ -107,6 +108,18 @@ use Essent;
 			when ('k') {$let = 'l'}
 			when ('l') {$let = 'm'}
 			when ('m') {$let = 'n'}
+			when ('n') {$let = 'o'}
+			when ('o') {$let = 'p'}
+			when ('p') {$let = 'q'}
+			when ('q') {$let = 'r'}
+			when ('r') {$let = 's'}
+			when ('s') {$let = 't'}
+			when ('t') {$let = 'u'}
+			when ('u') {$let = 'v'}
+			when ('v') {$let = 'w'}
+			when ('w') {$let = 'x'}
+			when ('x') {$let = 'y'}
+			when ('y') {$let = 'z'}
 			default {warn "out of range (cia)\n"}
 		}
 		$self->write_item($var.$let);
