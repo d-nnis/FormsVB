@@ -1,6 +1,9 @@
 use strict;
 use warnings;
 use Win32::GuiTest qw (:ALL);
+use Win32::Clipboard;
+use feature qw(switch);
+use Essent;
 #use Win32::GuiTest qw(FindWindowLike);
 
 
@@ -13,6 +16,7 @@ use Win32::GuiTest qw (:ALL);
 		bless ($self, $class);
 		# default settings
 		$self->option(save_next => 1, shell => 1, wait => 50);
+		#@{$self->{a} = ();
 		return $self;
 	}
 	
@@ -66,13 +70,55 @@ use Win32::GuiTest qw (:ALL);
 	}
 	
 	## ci: continue item
-	sub ci {
+	sub read_item {
 		my $self = shift;
+		my $wait = $self->get_option("wait");
+		my $clip = Win32::Clipboard();
 		$self->init() if $self->option("shell");
-		Win32::GuiTest::SendKeys("{F6}{TAB}");
-		my $text = Win32::GuiTest::WMGetText($self->{mngr});
-		$text = Win32::GuiTest::GetWindowText($self->{mngr});
-		print $text."\n";
+		Win32::GuiTest::SendKeys("{F6}{TAB}", $wait);
+		Win32::GuiTest::SendKeys("^c");
+		my $val = $clip->Get();
+		return $val;
+		
+	}
+	
+	sub write_item {
+		my $self = shift;
+		my $varname = shift;
+		Win32::GuiTest::SendKeys($varname,$self->get_option("wait"));
+		Win32::GuiTest::SendKeys("{ENTER}");
+	}
+	
+	sub cia {
+		my $self = shift;
+		my $varname = $self->read_item();
+		my ($var,$let) = $varname =~ /(.+)(\w)$/;
+		given ($let) {
+			when ('a') {$let = 'b'}
+			when ('b') {$let = 'c'}
+			when ('c') {$let = 'd'}
+			when ('d') {$let = 'e'}
+			when ('e') {$let = 'f'}
+			when ('f') {$let = 'g'}
+			when ('g') {$let = 'h'}
+			when ('h') {$let = 'i'}
+			when ('i') {$let = 'j'}
+			when ('j') {$let = 'k'}
+			when ('k') {$let = 'l'}
+			when ('l') {$let = 'm'}
+			when ('m') {$let = 'n'}
+			default {warn "out of range (cia)\n"}
+		}
+		$self->write_item($var.$let);
+	}
+	
+	sub ci1 {
+		my $self = shift;
+		my $varname = $self->read_item();
+		my ($var,$dig) = $varname =~ /(.+)(\d{2})\w$/;
+		$dig++;
+		$dig = Data::addzeros($dig, 2);
+		$self->write_item($var.$dig."a");
 	}
 	
 	sub form_def_einst {
