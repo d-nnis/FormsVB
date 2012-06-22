@@ -26,16 +26,18 @@ print "Modul essent.pm\n";
 			while (<STDIN> eq '') {}
 			readfile($_);
 		}
-		print "Datei oeffnen: $rfile\n";
+		print "Datei oeffnen: $rfile";
 		my @readarray;
 		my %config;
 		my %forms_job;
 		my $forms_part;
+		my $count_lines = 0;
 		if (-e $rfile) {
 			my $i = 0;
 			my $read_config_part = 0;
 			my $read_job_forms = 0;
 			while (<RFILE>) {
+				$count_lines++;
 				my $fline = $_;
 				if ($csv) {
 					# Kommentarzeilen mit '#' herausfiltern
@@ -72,6 +74,7 @@ print "Modul essent.pm\n";
 		} else {
 			print "\n Datei $rfile existiert nicht!! \n";
 		}
+		print " $count_lines Zeilen\n";
 		if ($config) {
 			return %config;
 		} elsif ($forms_job) {
@@ -81,6 +84,20 @@ print "Modul essent.pm\n";
 		}
 	}
 	
+	sub writefile_arr {
+		my $file = shift;
+		my @array_data = @_;
+		@array_data = map {$_."\n"} @array_data;
+		File::writefile($file, @array_data);
+	}
+	
+	sub readfile_arr {
+		my $file = shift;
+		my @array_data = File::readfile($file);
+		#(@array_data) = map {$_ =~ s/(.*)\n$/$1/} @array_data;
+		@array_data = map { chomp; $_ } @array_data;
+		return @array_data;
+	}
 	
 	sub writeSPSfile {
 		my $file = shift;
@@ -126,7 +143,8 @@ print "Modul essent.pm\n";
             $line_num = scalar @lines;
         } else {
             foreach (@lines) {
-                my $scal = scalar split /\n/, $_;
+				my @arr = split /\n/, $_;
+                my $scal = scalar @arr;
                 $line_num += $scal if $line_num < $scal;
             }            
         }
@@ -183,6 +201,10 @@ print "Modul essent.pm\n";
 		return @erg;
 	}
 	
+	## get_subdirs
+	## out: subdirs (relative path)
+	##  TODO optionale absolute path
+	##  option: depth of subdir-search, depths-first
 	sub get_subdirs {
 		my $dir = shift;
 		my $option = $_[0] if defined $_[0];
@@ -200,12 +222,153 @@ print "Modul essent.pm\n";
 		@subdirs = sort { lc($a) cmp lc($b)} @subdirs;
 		return @subdirs;
 	}
+
+	## get_subdirs
+	## out: subdirs (relative path)
+	##  TODO optionale absolute path
+	##  option: depth of subdir-search, depths-first
+	## default: depth=0 - no subdirs of subdir
+	## TODO depth>0 is too slow!
+	sub get_subdirs2 {
+		my $dir = shift;
+		$dir .= "\\" unless $dir =~ /\\$/;
+		my $depth = shift;
+		$depth = 0 unless defined $depth;
+		my @filter = @_;
+		if (@filter) {
+			return get_subdir_filter($dir, $depth, @filter);
+		} else {
+			return get_subdir_depth($dir, $depth);
+		}
+	}
+	
+	sub get_subdir_filter {
+		my $dir = shift;
+		my $depth = shift;
+		my @filter = @_;
+		my $option;	# TODO: options-handling
+		opendir(DIR, $dir);
+		my @content = readdir(DIR);
+		my @subdirs;
+		foreach my $cont (@content) {
+			next unless grep {$cont =~ /$_$/} @filter;
+			if (-d $dir.$cont && $cont !~ /^\./) {
+				push @subdirs, $dir.$cont;
+				push @subdirs, get_subdirs2($dir.$cont, $depth-1, @filter) if $depth > 0;
+				# if ($option eq 'num') { push @subdirs, $dir.$cont if $cont =~ /^\d/; }
+			}
+			
+		}
+		@subdirs = sort { lc($a) cmp lc($b)} @subdirs;
+		return @subdirs;
+	}
+	
+	sub get_subdir_depth {
+		my $dir = shift;
+		my $depth = shift;
+		my $option;	# TODO: options-handling
+		opendir(DIR, $dir);
+		my @content = readdir(DIR);
+		my @subdirs;
+		foreach my $cont (@content) {
+			if (-d $dir.$cont && $cont !~ /^\./) {
+				push @subdirs, $dir.$cont;
+				push @subdirs, get_subdirs2($dir.$cont, $depth-1) if $depth > 0;
+				# if ($option eq 'num') { push @subdirs, $dir.$cont if $cont =~ /^\d/; }
+			}
+			
+		}
+		@subdirs = sort { lc($a) cmp lc($b)} @subdirs;
+		return @subdirs;
+	}
 	
 	sub one {
 		print "one\n";
 		print $_[0], "\n";
 		return join ('', $_[0], "_one_");
 	}
+}
+
+{
+	package System;
+	
+	# TODO: {copy} in hash umwandeln?
+	my %operation_ok;
+	@{$operation_ok{copy}} = ("1 Datei.+kopiert", "1 file.+copied");
+	@{$operation_ok{irfan}} = ("1 Datei.+kopiert", "1 file.+copied");
+	
+	sub parse_copy {
+		my $systemout = shift;
+		my @system_err;
+		my $first_line;
+		# I:\vera6 2012\process_control\datamanip>copy "c:\Programme\Readsoft\FORMS\FieldImages01\5NH01000_VL01501a.jpg" "i:\vera6 2012\toSAP\Bildd\" 
+		#	1 Datei(en) kopiert.
+		foreach my $line (split /\n/, $systemout) {
+			# next if empty
+			next unless $line;
+			# erste Zeile
+			if ($first_line) {
+				if (grep {$line =~ /$_/} @{$operation_ok{copy}}) {
+					$first_line = undef;
+				} else {
+					push @system_err, ($first_line,$line);
+					$first_line = undef;
+				}
+			} else {
+				$first_line = $line;
+			}
+		}
+		@system_err = map {$_."\n"} @system_err;
+		return @system_err;
+	}
+	
+	sub parse_irfan {
+		my $systemout = shift;
+		my @system_err;
+		my $first_line;
+		foreach my $line (split /\n/, $systemout) {
+			# next if empty
+			next unless $line;
+			# erste Zeile
+			if ($first_line) {
+				if (grep {$line =~ /$_/} @{$operation_ok{irfan}}) {
+					$first_line = undef;
+				} else {
+					push @system_err, ($first_line,$line);
+					$first_line = undef;
+				}
+			} else {
+				$first_line = $line;
+			}
+		}
+		@system_err = map {$_."\n"} @system_err;
+		return @system_err;
+	}
+	
+	sub parse_move {
+		
+	}
+	
+	sub parse_del {
+		
+	}
+	
+	sub handle_err {
+		my $file_execute = shift;
+		my $file_log = shift;
+		my @system_err = @_;
+		my $show = 0;
+		$" = "\n";
+		if (@system_err) {
+			print "\n______ EXECUTE ERROR: $file_execute ___\n";
+			print "@system_err" if $show;
+			print "_________________________\n";
+			File::writefile($file_log, @system_err);
+		} else {
+			print "EXECUTE OK: $file_execute\n";
+		}
+	}
+	
 }
 
 {
@@ -233,6 +396,14 @@ print "Modul essent.pm\n";
 		} else {
 			return 0;
 		}
+	}
+	
+	sub enter_str {
+		my $eingabe;
+		print "\n>";
+		$eingabe = <STDIN>;
+		chomp $eingabe;
+		return $eingabe;
 	}
     
 	sub confirm_numcount {
@@ -288,6 +459,37 @@ print "Modul essent.pm\n";
 	}
 	# my @elems = qw (1 1 2 3 3 3 3 4 4 4 3);
 	
+	# find first position in array of target
+	sub array_pos {
+		my $target = shift;
+		my @array = @_;
+		my $pos;
+		foreach my $i (0..$#array) {
+			if ($array[$i] eq $target) {
+				$pos = $i;
+				last;
+			}
+		}
+		return $pos;
+	}
+	
+	sub get_data_field_csv {
+		my $target = shift;
+		my $labels = shift;
+		my @labels = @$labels;
+		my $values = shift;
+		my @values = @$values;
+		my $value;
+		my $target_pos = Data::array_pos($target, @labels);
+		if (defined $target_pos){
+			$value = $values[$target_pos];
+		} else {
+			warn "$target in array not available!\n";
+		}
+		
+		
+		return $value;
+	}
 	
 	# entferne preceding und trailing whitespaces (white space (new line, carriage return, space, tab, form feed))
 	sub remove_ws {
@@ -319,7 +521,9 @@ print "Modul essent.pm\n";
 	
 	# stamm ohne erw
 	sub get_fname {
-		return $1 if ($_[0] =~ /(.+)\./);
+		#return $1 if ($_[0] =~ /(.+)\./);
+		# stop at first match
+		return $1 if ($_[0] =~ /(.+?)\./);
 		warn "!! get_fname-error\n";
 	}
 	
@@ -416,7 +620,18 @@ print "Modul essent.pm\n";
 			push @datVars, [$varname,$offset,$length];
 		}
 	}
-	
+
+	sub csvTOarray {
+		my @array = @_;
+		my @arrofarr;
+		foreach (@array) {
+			#push @arrofarr, [split /,/, $_ =~ s/\n$//];
+			$_ =~ s/\n$//;
+			push @arrofarr, [split /;/, $_];
+		}
+		return @arrofarr;
+	}
+
 	# add zeros until string is a (input)-digit string
 	#
 	sub addzeros {
@@ -468,6 +683,23 @@ print "Modul essent.pm\n";
 		return $path;
 	}
 	
+	#sub specialSplit {
+	#	my $string = shift;
+	#	my $sep = shift || "\"";
+	#	my $inVal = 0;
+	#	my @atom = split //, $string;
+	#	my @array;
+	#	my $i = 0;
+	#	foreach (@atom) {
+	#		if ($_ eq $sep) {
+	#			$inVal = 1;
+	#			$array[$i] = 
+	#			next;
+	#		}
+	#	}
+	#	return @array;
+	#}
+	
 	sub specialJoin {
 		my $fieldTerminator = shift;
 		my $fieldEnclosed = shift;
@@ -484,12 +716,11 @@ print "Modul essent.pm\n";
 		foreach my $bildd (@bildd) {
 			my @n2bildd;
 			foreach my $e (split /;/, $bildd) {
-				
 				if ($e =~ /TIF$/) {
 					$e = Data::remove_ws $e;
 					$e =~ s/\.TIF/\.png/;
 					$e =~ tr/A-Z/a-z/;
-					#$e =~ tr/\\/\//;
+					$e =~ tr/\\/\//;
 					$e = $prefix.$e;
 				}
 				push @n2bildd, $e;
