@@ -128,6 +128,22 @@ use Essent;
 		$self->write_item($var.$let);
 	}
 	
+	# Störzeichen Value ändern/ setzen
+	sub mark_stoerzeichen {
+		my $self = shift;
+		my $stoerz_val = shift;
+		my $wait = $self->get_option("wait");
+		my $clip = Win32::Clipboard();
+		Win32::GuiTest::SendKeys("{Enter}");
+		Win32::GuiTest::SendKeys("^c", $wait*3);
+		my $Kategorie = $clip->Get();
+		die unless $Kategorie eq 1;
+		Win32::GuiTest::SendKeys("^{TAB}", $wait);
+		Win32::GuiTest::SendKeys("{TAB}{TAB}{SPACE}{TAB}", $wait);
+		Win32::GuiTest::SendKeys($stoerz_val, $wait);
+		Win32::GuiTest::SendKeys("{ENTER}{TAB}{DOWN}");
+	}
+	
 	sub ci1 {
 		my $self = shift;
 		my $varname = $self->read_item();

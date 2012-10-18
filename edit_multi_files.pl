@@ -10,12 +10,13 @@ my $readdir = "c:\\Programme\\Readsoft\\FORMS\\Jobs\\";
 my $multifiles_extension = "JOB";
 my $backup_extension = "COMMONBAK";
 my $notequal_sign = "___NOT EQUAL___";
+my $file_common = $readdir.$multifiles_extension.'.common';
 ##
 
 #open array-files
 my @file;
 
-@file = File::get_by_ext($readdir,$multifiles_extension);
+#@file = File::get_by_ext($readdir,$multifiles_extension);
 
 @file = split /,/, $config{forms_jobs};
 
@@ -26,6 +27,7 @@ my %content_file;
 
 # performance tweak: content_common schon hier anlegen
 foreach my $filename (@file) {
+	next if 0;
 	@{$content_file{$filename}} = File::readfile($readdir.$filename);
 }
 
@@ -63,10 +65,12 @@ foreach my $filename (keys %content_file) {
 	$file_linenum = 0;
 }
 
-File::writefile($readdir.$multifiles_extension.'.common', @content_common);
 
+File::writefile($file_common, @content_common);
 
-say "\ncheck, alter and save common lines in $readdir$multifiles_extension.common\n\n";
+say "\ncheck, alter and save common lines in $file_common\n\n";
+my $edit_call = 'c:\Programme\Notepad++\notepad++.exe '. $file_common;
+system($edit_call);
 say "continue...";
 die "terminate script\n" unless Process::confirmJN();
 
