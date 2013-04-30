@@ -23,9 +23,10 @@ use Essent;
 	sub init {
 		my $self = shift;
 		my $target_window = "IrfanView";
-		my @windows = Win32::GuiTest::FindWindowLike(undef, $target_window);
+		#my @windows = Win32::GuiTest::FindWindowLike(undef, $target_window);
+		my @windows = Win32::GuiTest::FindWindowLike(undef, " - IrfanView");
 		die "Could not find $target_window\n" unless @windows;
-		die "There is more than one $target_window running\n" if @windows > 1;
+		die "There is more than one $target_window running\n" if @windows > 2;
 		$self->{irfan} = $windows[0];
 		print "found window $self->{irfan}\n";
 		Win32::GuiTest::SetForegroundWindow($self->{irfan});
@@ -65,6 +66,8 @@ use Essent;
 	sub get_crop {
 		my $self = shift;
 		$self->init() if $self->option("shell");
+		my $windowtitle = Win32::GuiTest::GetWindowText($self->{irfan});
+		print "Window-Title:", $windowtitle;
 		
 	}
 
