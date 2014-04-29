@@ -59,6 +59,21 @@ use Essent;
         }
     }
 	
+	sub delInput {
+		my $self = shift;
+		$self->init() if $self->option("shell");
+		my $wait = $self->get_option("wait");
+		print "Shift+Enter\n";
+		Win32::GuiTest::SendKeys("+{DELETE}",$wait);
+		print "Shift+Enter\n";
+		Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		print "Enter\n";
+		Win32::GuiTest::SendKeys("{LEFT}",$wait);
+		print "Left\n";
+		Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		print "Enter\n";
+	}
+	
 	sub std1 {
 		my $self = shift;
 		$self->init() if $self->option("shell");
@@ -77,6 +92,19 @@ use Essent;
 		$self->option(save_next => 0);
 		$self->TRS_std();
 		$self->change_format_TRS2();
+		#$self->TRS_length_Exportfile(100);
+		#$self->TRS_length_Importfile(100);
+		#$self->TRS_length_Fieldfile(100);
+		$self->form_def_einst();
+		$self->save();
+	}
+	
+	sub std3 {
+		my $self = shift;
+		$self->init() if $self->option("shell");
+		$self->option(save_next => 0);
+		$self->TRS_std();
+		$self->change_format_TRS3();
 		#$self->TRS_length_Exportfile(100);
 		#$self->TRS_length_Importfile(100);
 		#$self->TRS_length_Fieldfile(100);
@@ -297,6 +325,74 @@ use Essent;
 		Win32::GuiTest::SendKeys("{ENTER}",$wait);
 		$self->save_next() if $self->get_option("save_next");
 	}
+	
+	sub change_format_TRS3 {
+		my $self = shift;
+		my $length = shift || 150;
+		my $wait = $self->get_option("wait");
+		# open TRS
+		Win32::GuiTest::SendKeys("%bt", $wait);
+		
+		# ## select #Exportfile
+		# foreach (1..9) {
+			# Win32::GuiTest::SendKeys("{DOWN}",$wait);	
+		# }
+		# #select properties button
+		# foreach (1..15) {
+			# Win32::GuiTest::SendKeys("{TAB}",$wait);	
+		# }
+		# # Format field
+		# Win32::GuiTest::SendKeys("{ENTER}{TAB}{TAB}",$wait);
+		# # enter "X($length)"
+		# Win32::GuiTest::SendKeys("{X}{(}($length){)}", $wait);
+		# # length field
+		# Win32::GuiTest::SendKeys("{TAB}{TAB}{TAB}{TAB}",$wait);
+		# Win32::GuiTest::SendKeys($length);
+		# Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		# print "Exportfile changed\n";
+		
+		## select #Importfile
+		# foreach (1..2) {
+			# Win32::GuiTest::SendKeys("{DOWN}",$wait);	
+		# }
+		foreach (1..11) {
+			Win32::GuiTest::SendKeys("{DOWN}",$wait);	
+		}
+		# select properties button
+		foreach (1..15) {
+			Win32::GuiTest::SendKeys("{TAB}",$wait);	
+		}
+		# Format field
+		Win32::GuiTest::SendKeys("{ENTER}{TAB}{TAB}",$wait);
+		# enter "X($length)"
+		Win32::GuiTest::SendKeys("{X}{(}($length){)}", $wait);
+		# length field
+		Win32::GuiTest::SendKeys("{TAB}{TAB}{TAB}{TAB}",$wait);
+		Win32::GuiTest::SendKeys($length);
+		Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		print "Importfile changed\n";
+		
+		# ## select Fieldfile
+		# Win32::GuiTest::SendKeys("{DOWN}{DOWN}",$wait);
+		# # find properties button
+		# foreach (1..15) {
+			# Win32::GuiTest::SendKeys("{TAB}",$wait);	
+		# }
+		# # Format field
+		# Win32::GuiTest::SendKeys("{ENTER}{TAB}{TAB}",$wait);
+		# # enter "X(100)"
+		# Win32::GuiTest::SendKeys("{X}{(}($length){)}", $wait);
+		# # length field
+		# Win32::GuiTest::SendKeys("{TAB}{TAB}{TAB}{TAB}",$wait);
+		# # enter "100"
+		# Win32::GuiTest::SendKeys($length, $wait);
+		# Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		# print "Fieldfile changed\n";
+		
+		Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		$self->save_next() if $self->get_option("save_next");
+	}
+	
 	
 	sub save_next {
 		my $self = shift;

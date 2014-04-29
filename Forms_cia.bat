@@ -1,2 +1,3 @@
-cd c:\Dokumente und Einstellungen\huesemann.POLYINTERN\Eigene Dateien\workspace\FormsVB
+c:
+cd c:\Users\huesemann\workspace\FormsVB\
 perl Forms_cia.pl
