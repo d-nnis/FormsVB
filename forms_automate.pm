@@ -28,7 +28,10 @@ use Essent;
 		die "Could not find $target_window\n" unless @windows;
 		die "There is more than one $target_window running\n" if @windows > 1;
 		$self->{mngr} = $windows[0];
-		print "found window $self->{mngr}\n";
+		$self->{windowtitle} = Win32::GuiTest::GetWindowText($self->{mngr});
+		# " 1971148 ~~ ReadSoft FORMS Manager - [RB_FK_03 [AKTIV]]"
+		print "found window $self->{mngr} ~~ $self->{windowtitle}\n";
+		#Process::confirm();
 		Win32::GuiTest::SetForegroundWindow($self->{mngr});
 	}
 	
@@ -192,7 +195,8 @@ use Essent;
 		my $varname = $self->read_item();
 		my ($var,$dig) = $varname =~ /(.+)(\d{2})\w$/;
 		$dig++;
-		$dig = Data::addzeros($dig, 2);
+		#$dig = Data::addzeros($dig, 2);
+		$dig = Data::addzeros($dig, 3);
 		$self->write_item($var.$dig."a");
 	}
 	
@@ -213,6 +217,32 @@ use Essent;
 		print "std in TRS\n";
 		# close or empty
 		$self->save_next() if $self->get_option("save_next");
+	}
+	
+	sub save_TRS_file {
+		my $self = shift;
+		$self->init() if $self->option("shell");
+		$self->option(save_next => 0);
+		my $wait = $self->get_option("wait");
+		# "ReadSoft FORMS Manager - [RB_FK_03 [AKTIV]]"
+		my ($def) = $self->{windowtitle} =~ /ReadSoft FORMS Manager - \[(.{1,11}) \[I?N?AKTIV\]\]/;
+		print "Definition: $def\n";
+		my $path = "i:\\forms\\jobs\\TRS\\";
+		# open TRS-export-dialog
+		Win32::GuiTest::SendKeys("%bx", $wait*4);
+		# enter name
+		Win32::GuiTest::SendKeys("$path", $wait/4);
+		Win32::GuiTest::SendKeys("$def", $wait/4);
+		#Process::confirm;
+		Win32::GuiTest::SendKeys("{ENTER}",$wait);
+		print "TRS-file saved: $def\n";
+		# overwrite-dialog?
+		my $target_child = "Speichern unter";
+		my @windows_child = Win32::GuiTest::FindWindowLike(undef, $target_child);
+		if (@windows_child) {
+			print "Overwrite: $target_child\n";
+			Win32::GuiTest::SendKeys("{LEFT}{ENTER}",$wait);
+		}
 	}
 	
 	# changes Importfile & Fieldfile tp  "X(100)", requires standard TRS
@@ -404,7 +434,7 @@ use Essent;
 		my $self = shift;
 		# save
 		Win32::GuiTest::SendKeys("^s",$self->get_option("wait"));
-		print "def saved";
+		print "def saved\n";
 	}
 	
 	sub next {

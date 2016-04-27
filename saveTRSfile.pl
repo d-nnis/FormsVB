@@ -5,5 +5,5 @@ use forms_automate;
 my $forms = Forms->new();
 $forms->option(wait=>20);
 select(undef, undef, undef, 0.2);
-$forms->std3();
 $forms->save_TRS_file();
+sleep(1);
